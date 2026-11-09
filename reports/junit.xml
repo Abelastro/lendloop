@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="47" failures="0" errors="0" time="1.343059188">
+    <testsuite name="tests/components.test.tsx" timestamp="2026-11-09T13:51:47.678Z" hostname="f55bb3f3a9e1" tests="3" failures="0" errors="0" skipped="0" time="0.13638896">
+        <testcase classname="tests/components.test.tsx" name="status badge &gt; renders human labels for every loan status" time="0.068232555">
+        </testcase>
+        <testcase classname="tests/components.test.tsx" name="activity line &gt; renders delivery state for automation events" time="0.05877045">
+        </testcase>
+        <testcase classname="tests/components.test.tsx" name="activity line &gt; renders failed reminder delivery" time="0.001583099">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/convex.test.ts" timestamp="2026-11-09T13:51:47.688Z" hostname="f55bb3f3a9e1" tests="15" failures="0" errors="0" skipped="0" time="1.054267904">
+        <testcase classname="tests/convex.test.ts" name="viewer bootstrap &gt; rejects identities without a verified email" time="0.368084878">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="viewer bootstrap &gt; creates a member and elevates verified ADMIN_EMAILS users" time="0.023813128">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="viewer bootstrap &gt; keeps an existing admin role when the email leaves ADMIN_EMAILS" time="0.007201236">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="tool visibility and ownership &gt; returns only name and category from the public query" time="0.170402804">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="tool visibility and ownership &gt; enforces owner-only edits and admin removal" time="0.022409926">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="loan lifecycle and RBAC &gt; runs request, approve, and return with ownership checks" time="0.100025919">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="loan lifecycle and RBAC &gt; rejects self-requests and overlapping windows" time="0.024837191">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="reminder write-back idempotency &gt; accepts one reminder per loan and UTC run date" time="0.095121037">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="reminder write-back idempotency &gt; skips reminders for loans that are not approved" time="0.016160694">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="signed request guards &gt; detects duplicate and in-progress replay keys" time="0.02598592">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="signed request guards &gt; rate limits a route to sixty requests per minute" time="0.06605435">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="signed HTTP endpoints &gt; rejects unsigned requests and accepts signed reminder batches" time="0.055242901">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="signed HTTP endpoints &gt; serves signed overdue queries and returns 503 without a secret" time="0.005910828">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="signed HTTP endpoints &gt; records incidents idempotently" time="0.013316603">
+        </testcase>
+        <testcase classname="tests/convex.test.ts" name="admin console &gt; requires an admin role" time="0.044180049">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/crypto.test.ts" timestamp="2026-11-09T13:51:47.706Z" hostname="f55bb3f3a9e1" tests="5" failures="0" errors="0" skipped="0" time="0.038120106">
+        <testcase classname="tests/crypto.test.ts" name="HMAC signing &gt; produces a stable SHA-256 signature" time="0.023347931">
+        </testcase>
+        <testcase classname="tests/crypto.test.ts" name="HMAC signing &gt; rejects a changed body or wrong key" time="0.003487738">
+        </testcase>
+        <testcase classname="tests/crypto.test.ts" name="HMAC signing &gt; rejects malformed signatures without throwing" time="0.000426265">
+        </testcase>
+        <testcase classname="tests/crypto.test.ts" name="HMAC signing &gt; creates fresh headers with an idempotency key" time="0.00545863">
+        </testcase>
+        <testcase classname="tests/crypto.test.ts" name="HMAC signing &gt; enforces the five minute timestamp window" time="0.001005653">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/form-validation.test.ts" timestamp="2026-11-09T13:51:47.716Z" hostname="f55bb3f3a9e1" tests="10" failures="0" errors="0" skipped="0" time="0.028565671">
+        <testcase classname="tests/form-validation.test.ts" name="validateToolDraft &gt; accepts a complete tool draft" time="0.015080944">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateToolDraft &gt; rejects names that are too short or too long" time="0.000868436">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateToolDraft &gt; rejects descriptions that are too short or too long" time="0.00067867">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateToolDraft &gt; trims whitespace before measuring length" time="0.002496942">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; accepts a valid request" time="0.000926428">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; rejects a start date in the past" time="0.000717754">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; rejects an inverted range" time="0.00054965">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; rejects ranges longer than the maximum" time="0.000951301">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; rejects an overlong note" time="0.00052807">
+        </testcase>
+        <testcase classname="tests/form-validation.test.ts" name="validateLoanDraft &gt; rejects malformed dates" time="0.000533302">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/validation.test.ts" timestamp="2026-11-09T13:51:47.727Z" hostname="f55bb3f3a9e1" tests="6" failures="0" errors="0" skipped="0" time="0.020310723">
+        <testcase classname="tests/validation.test.ts" name="date handling &gt; accepts real calendar dates and rejects impossible ones" time="0.0062729">
+        </testcase>
+        <testcase classname="tests/validation.test.ts" name="date handling &gt; detects overlapping inclusive ranges" time="0.000721553">
+        </testcase>
+        <testcase classname="tests/validation.test.ts" name="date handling &gt; accepts a normal future range" time="0.003891184">
+        </testcase>
+        <testcase classname="tests/validation.test.ts" name="date handling &gt; rejects past, inverted, and overlong ranges" time="0.002546279">
+        </testcase>
+        <testcase classname="tests/validation.test.ts" name="listing validation &gt; trims and normalizes tool names" time="0.000743955">
+        </testcase>
+        <testcase classname="tests/validation.test.ts" name="listing validation &gt; rejects short and oversized names" time="0.001557155">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/workflows.test.ts" timestamp="2026-11-09T13:51:47.733Z" hostname="f55bb3f3a9e1" tests="8" failures="0" errors="0" skipped="0" time="0.065405824">
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; contains the three expected workflows" time="0.008859587">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; connects only to nodes that exist" time="0.007603982">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; uses HMAC verification in the inbound webhook" time="0.001764083">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; fetches and writes back overdue reminders with signing" time="0.001598764">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; passes idempotency keys on signed write-backs" time="0.003132813">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; reports failures through the error workflow" time="0.000983298">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; generates n8n Cloud variants that use $vars instead of $env" time="0.015551093">
+        </testcase>
+        <testcase classname="tests/workflows.test.ts" name="exported n8n workflows &gt; does not embed credentials or secrets" time="0.006634296">
+        </testcase>
+    </testsuite>
+</testsuites>

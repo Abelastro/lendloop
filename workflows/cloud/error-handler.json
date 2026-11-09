@@ -1,0 +1,101 @@
+{
+  "id": "f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b",
+  "name": "LendLoop - Automation error handler",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c3d4e5f6-a7b8-4c9d-8e0f-1a2b3c4d5e6f",
+      "name": "Error trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [-520, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const crypto = require('crypto');\nconst key = $vars.LENDLOOP_OUTBOUND_SECRET;\nif (!key) throw new Error('LENDLOOP_OUTBOUND_SECRET is not configured');\nconst data = $input.first().json ?? {};\nconst execution = data.execution ?? {};\nconst workflow = data.workflow ?? {};\nconst message = String(\n  execution.error?.message ?? execution.error ?? 'Unspecified workflow failure',\n)\n  .replace(/https?:\\/\\/\\S+/gi, '[redacted-url]')\n  .replace(/\\b(?:xox[baprs]-|sk_(?:live|test)_)[A-Za-z0-9_-]+\\b/gi, '[redacted-token]')\n  .replace(/\\s+/g, ' ')\n  .slice(0, 500);\nconst payload = {\n  workflow: String(workflow.name ?? 'unknown-workflow'),\n  executionId: String(execution.id ?? 'unknown-' + Date.now()),\n  node: execution.lastNodeExecuted ? String(execution.lastNodeExecuted) : undefined,\n  message,\n};\nconst body = JSON.stringify(payload);\nconst timestamp = Math.floor(Date.now() / 1000).toString();\nconst signature = crypto.createHmac('sha256', key).update(timestamp + '.' + body).digest('hex');\nreturn [\n  {\n    json: {\n      body,\n      headers: {\n        'content-type': 'application/json',\n        'x-lendloop-timestamp': timestamp,\n        'x-lendloop-signature': signature,\n        'x-lendloop-idempotency-key': 'incident-' + payload.executionId,\n      },\n    },\n  },\n];"
+      },
+      "id": "d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7a",
+      "name": "Sign incident",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-280, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.LENDLOOP_CONVEX_SITE_URL + '/n8n/incidents' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "={{ $json.headers['content-type'] }}"
+            },
+            {
+              "name": "x-lendloop-timestamp",
+              "value": "={{ $json.headers['x-lendloop-timestamp'] }}"
+            },
+            {
+              "name": "x-lendloop-signature",
+              "value": "={{ $json.headers['x-lendloop-signature'] }}"
+            },
+            {
+              "name": "x-lendloop-idempotency-key",
+              "value": "={{ $json.headers['x-lendloop-idempotency-key'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.body }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "e5f6a7b8-c9d0-4e1f-8a2b-3c4d5e6f7a8b",
+      "name": "Report incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-40, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Error trigger": {
+      "main": [
+        [
+          {
+            "node": "Sign incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sign incident": {
+      "main": [
+        [
+          {
+            "node": "Report incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -1,0 +1,10 @@
+.next
+node_modules
+convex/_generated
+reports/coverage
+reports/*.json
+reports/*.xml
+reports/test-summary.md
+test-results
+playwright-report
+package-lock.json

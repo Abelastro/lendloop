@@ -1,0 +1,31 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+!reports/coverage
+!reports/coverage/**
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+n8n.env
+*.pem
+*.key
+
+# Convex
+.convex
+convex/_generated
+
+# Tooling
+.DS_Store
+*.log
+.vercel
+.turbo
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+test-results
+playwright-report

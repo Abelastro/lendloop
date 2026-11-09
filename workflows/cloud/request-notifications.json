@@ -1,0 +1,277 @@
+{
+  "id": "3f6b2c1a-7d4e-4f1a-9b2c-1a2b3c4d5e6f",
+  "name": "LendLoop - Request notifications",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lendloop/notifications",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "b3e1f2a4-5c6d-4e7f-8a9b-0c1d2e3f4a5b",
+      "name": "Convex webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-720, 0],
+      "webhookId": "3f6b2c1a-7d4e-4f1a-9b2c-1a2b3c4d5e6f"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const crypto = require('crypto');\nconst headers = $json.headers ?? {};\nconst raw = typeof $json.body === 'string'\n  ? $json.body\n  : Buffer.isBuffer($json.body)\n    ? $json.body.toString('utf8')\n    : JSON.stringify($json.body ?? {});\nconst timestamp = String(headers['x-lendloop-timestamp'] ?? '');\nconst signature = String(headers['x-lendloop-signature'] ?? '');\nconst key = $vars.LENDLOOP_INBOUND_SECRET;\n\nif (!key) throw new Error('LENDLOOP_INBOUND_SECRET is not configured');\nif (!/^\\d{10,13}$/.test(timestamp)) throw new Error('Missing timestamp');\nconst numeric = Number(timestamp);\nconst age = Math.abs(Date.now() - (timestamp.length <= 10 ? numeric * 1000 : numeric));\nif (age > 300000) throw new Error('Stale signature timestamp');\n\nconst expected = crypto.createHmac('sha256', key).update(timestamp + '.' + raw).digest('hex');\nconst a = Buffer.from(expected, 'hex');\nconst b = Buffer.from(signature, 'hex');\nif (!/^[a-f0-9]{64}$/.test(signature) || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {\n  throw new Error('Invalid signature');\n}\n\nlet event;\ntry {\n  event = JSON.parse(raw);\n} catch {\n  throw new Error('Request body must be JSON');\n}\n\nconst template = {\n  'request.created': `New request for ${event.tool?.name ?? 'a tool'} from ${event.actor?.name ?? 'a neighbor'} (${event.loan?.startDate ?? '?'} to ${event.loan?.endDate ?? '?'}). Approve or decline in LendLoop.`,\n  'request.approved': `Your request for ${event.tool?.name ?? 'a tool'} was approved by ${event.actor?.name ?? 'the lender'} (${event.loan?.startDate ?? '?'} to ${event.loan?.endDate ?? '?'}).`,\n  'request.declined': `Your request for ${event.tool?.name ?? 'a tool'} was declined by ${event.actor?.name ?? 'the lender'}.`,\n  'request.cancelled': `${event.actor?.name ?? 'The borrower'} cancelled the request for ${event.tool?.name ?? 'a tool'}.`,\n  'loan.returned': `${event.tool?.name ?? 'A tool'} was marked returned by ${event.actor?.name ?? 'a neighbor'}.`,\n};\n\nconst slackUrl = $vars.LENDLOOP_SLACK_WEBHOOK_URL;\nconst recipientEmail = String(event.recipient?.email ?? '');\nconst resendKey = $vars.LENDLOOP_RESEND_API_KEY;\nconst fromEmail = $vars.LENDLOOP_NOTIFICATION_FROM_EMAIL;\nconst canEmail = Boolean(recipientEmail && resendKey && fromEmail);\nconst channel = canEmail ? 'email' : slackUrl ? 'slack' : 'mock';\nconst subject = {\n  'request.created': 'New LendLoop borrow request',\n  'request.approved': 'Your LendLoop request was approved',\n  'request.declined': 'Your LendLoop request was declined',\n  'request.cancelled': 'A LendLoop request was cancelled',\n  'loan.returned': 'A LendLoop tool was returned',\n}[event.type] ?? 'LendLoop update';\nconst text = template[event.type] ?? `LendLoop update: ${event.type ?? 'automation event'}`;\n\nif (channel === 'mock') console.log('[mock notification] ' + text);\n\nreturn {\n  json: {\n    eventId: String(event.id ?? ''),\n    type: String(event.type ?? 'unknown'),\n    channel,\n    slackUrl: slackUrl || '',\n    recipientEmail,\n    fromEmail: fromEmail || '',\n    subject,\n    text,\n  },\n};"
+      },
+      "id": "c4f2a3b5-6d7e-4f8a-9b0c-1d2e3f4a5b6c",
+      "name": "Verify signature and compose",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-500, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d5a3b4c6-7e8f-4a9b-8c1d-2e3f4a5b6c7d",
+              "leftValue": "={{ $json.slackUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e6b4c5d7-8f9a-4b1c-9d2e-3f4a5b6c7d8e",
+      "name": "Slack configured?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-260, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.slackUrl }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "f7c5d6e8-9a0b-4c2d-8e3f-4a5b6c7d8e9f",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, -120],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, channel: 'slack' }) }}",
+        "options": {}
+      },
+      "id": "a8d6e7f9-0b1c-4d3e-9f4a-5b6c7d8e9f0a",
+      "name": "Respond delivered",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [260, -120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, channel: 'mock' }) }}",
+        "options": {}
+      },
+      "id": "b9e7f8a0-1c2d-4e4f-8a5b-6c7d8e9f0a1b",
+      "name": "Respond mock",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [40, 140]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": "email",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Email configured?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-260, -160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.LENDLOOP_RESEND_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: $json.fromEmail, to: $json.recipientEmail, subject: $json.subject, text: $json.text }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "b3c4d5e6-f7a8-4b9c-8d1e-2f3a4b5c6d7e",
+      "name": "Send email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, -160],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, channel: 'email' }) }}",
+        "options": {}
+      },
+      "id": "c4d5e6f7-a8b9-4c0d-9e2f-3a4b5c6d7e8f",
+      "name": "Respond emailed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [260, -160]
+    }
+  ],
+  "connections": {
+    "Convex webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify signature and compose",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify signature and compose": {
+      "main": [
+        [
+          {
+            "node": "Email configured?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email configured?": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack configured?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond emailed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack configured?": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond mock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

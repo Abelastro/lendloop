@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+  NEXT_PUBLIC_CONVEX_URL: "https://example.convex.cloud"
+  NEXT_PUBLIC_CONVEX_SITE_URL: "https://example.convex.site"
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk"
+  CLERK_SECRET_KEY: "sk_test_ci_placeholder"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Convex types
+        run: npx convex codegen --system-udfs
+
+      - name: Typecheck, lint, validate workflows, test
+        run: npm run check
+
+      - name: Test reports and coverage
+        run: npm run test:report
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lendloop-test-reports
+          path: reports/
+          if-no-files-found: warn

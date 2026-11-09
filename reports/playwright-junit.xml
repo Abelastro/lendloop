@@ -1,0 +1,22 @@
+<testsuites id="" name="" tests="8" failures="0" skipped="0" errors="0" time="19.097777999999998">
+<testsuite name="public.spec.ts" timestamp="2026-11-09T13:57:07.337Z" hostname="chromium" tests="4" failures="0" skipped="0" time="21.923" errors="0">
+<testcase name="public surface › landing page tells the LendLoop story" classname="public.spec.ts" time="4.986">
+</testcase>
+<testcase name="public surface › public board exposes only the public projection" classname="public.spec.ts" time="10.716">
+</testcase>
+<testcase name="public surface › health endpoint is no-store and alive" classname="public.spec.ts" time="0.261">
+</testcase>
+<testcase name="public surface › signed-out workspace redirects to sign-in" classname="public.spec.ts" time="5.96">
+</testcase>
+</testsuite>
+<testsuite name="public.spec.ts" timestamp="2026-11-09T13:57:07.337Z" hostname="mobile" tests="4" failures="0" skipped="0" time="19.395" errors="0">
+<testcase name="public surface › landing page tells the LendLoop story" classname="public.spec.ts" time="5.664">
+</testcase>
+<testcase name="public surface › public board exposes only the public projection" classname="public.spec.ts" time="10.456">
+</testcase>
+<testcase name="public surface › health endpoint is no-store and alive" classname="public.spec.ts" time="0.061">
+</testcase>
+<testcase name="public surface › signed-out workspace redirects to sign-in" classname="public.spec.ts" time="3.214">
+</testcase>
+</testsuite>
+</testsuites>
